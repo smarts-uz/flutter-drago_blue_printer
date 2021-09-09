@@ -1,15 +1,17 @@
 # android_bluetooth_printer
 
-A plugin for Android Bluetooth Printer
+A plugin for Android Bluetooth Printer.
+Only works on Android.
+This plugin implements [ESCPOS-ThermalPrinter-Android](https://github.com/DantSu/ESCPOS-ThermalPrinter-Android) to print using most of ESC-POS printers.
+Ow, and it doesn't requires any location permission.
 
 ## Getting Started
 
-This project is a starting point for a Flutter
-[plug-in package](https://flutter.dev/developing-packages/),
-a specialized package that includes platform-specific implementation code for
-Android and/or iOS.
+You just need to write
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```
+await AndroidBluetoothPrinter.print(theText);
+```
+
+Follow the text format provided by [ESCPOS-ThermalPrinter-Android](https://github.com/DantSu/ESCPOS-ThermalPrinter-Android)
 
