@@ -1,3 +1,6 @@
+## 0.0.2+2
+* Persist last used printer address for faster printing 
+
 ## 0.0.2+1
 * Update LICENSE
 
