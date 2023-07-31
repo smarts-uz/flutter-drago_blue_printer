@@ -38,10 +38,11 @@ class MyApp extends StatelessWidget {
                       "[L]Raymond DUPONT\n" +
                       "[L]5 rue des girafes\n" +
                       "[L]31547 PERPETES\n" +
-                      "[L]Tel : +33801201456\n" +
-                      "[L]\n" +
-                      "[C]<barcode type='ean13' height='10'>831254784551</barcode>\n" +
-                      "[C]<qrcode size='20'>http://www.developpeur-web.dantsu.com/</qrcode>"
+                      "[L]Tel : +33801201456\n",
+                      // "[L]\n" +
+                      // "[C]<barcode type='ean13' height='10'>831254784551</barcode>\n" +
+                      // "[C]<qrcode size='20'>http://www.developpeur-web.dantsu.com/</qrcode>",
+                // ipAddress: '192.168.24.83:9100',
               );
             },
             child: Text('Print'),

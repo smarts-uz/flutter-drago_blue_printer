@@ -2,7 +2,7 @@ group 'com.renseki.lib.android_bluetooth_printer'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.5.30'
+    ext.kotlin_version = '1.7.21'
     repositories {
         google()
         mavenCentral()
@@ -39,5 +39,5 @@ android {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'com.github.DantSu:ESCPOS-ThermalPrinter-Android:3.0.0'
+    implementation 'com.github.DantSu:ESCPOS-ThermalPrinter-Android:3.3.0'
 }

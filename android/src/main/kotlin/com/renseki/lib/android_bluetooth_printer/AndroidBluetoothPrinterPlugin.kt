@@ -5,35 +5,39 @@ import androidx.annotation.NonNull
 import com.dantsu.escposprinter.EscPosPrinter
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothConnection
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnections
+import com.dantsu.escposprinter.connection.tcp.TcpConnection
 import com.dantsu.escposprinter.exceptions.EscPosConnectionException
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import kotlin.concurrent.thread
 
 class AndroidBluetoothPrinterPlugin : FlutterPlugin, MethodCallHandler {
     private lateinit var channel: MethodChannel
     private lateinit var context: Context
 
-    override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+    override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "android_bluetooth_printer")
         channel.setMethodCallHandler(this)
         context = flutterPluginBinding.applicationContext
     }
 
-    override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
+    override fun onMethodCall(call: MethodCall, result: Result) {
         if (call.method == "print") {
             val text = (call.arguments as? Map<*, *>)?.get("text") as? String
+            val width = (call.arguments as? Map<*, *>)?.get("width") as? Int
+            val ipAddress = (call.arguments as? Map<*, *>)?.get("ip_address") as? String
 
-            if (text == null || text.isBlank()) {
+            if (text.isNullOrBlank()) {
                 result.error(
                     "400",
                     "Please supply this print method with a text to print",
                     null,
                 )
             } else {
-                print(text)
+                print(text, ipAddress, width)
                 result.success("printed")
             }
         } else {
@@ -54,7 +58,7 @@ class AndroidBluetoothPrinterPlugin : FlutterPlugin, MethodCallHandler {
             }
         }
 
-        if (bluetoothPrinters != null && bluetoothPrinters.isNotEmpty()) {
+        if (!bluetoothPrinters.isNullOrEmpty()) {
             for (printer in bluetoothPrinters) {
                 try {
                     printer.connect()
@@ -77,26 +81,44 @@ class AndroidBluetoothPrinterPlugin : FlutterPlugin, MethodCallHandler {
     }
 
     private fun Context.getLastPrinterAddress(): String? {
-        return getSharedPreferences("android_bluetooth_print_settings", Context.MODE_PRIVATE).getString(
+        return getSharedPreferences(
+            "android_bluetooth_print_settings",
+            Context.MODE_PRIVATE
+        ).getString(
             "LAST_PRINTER_ADDRESS",
             null
         )
     }
 
-    private fun print(text: String) {
-        val printer = EscPosPrinter(
-            getPrinter(context.getLastPrinterAddress()),
-            203,
-            58f,
-            32,
-        )
+    private fun print(text: String, ipAddress: String?, width: Int?) {
+        thread {
+            val printer = if (ipAddress.isNullOrBlank()) {
+                EscPosPrinter(
+                    getPrinter(context.getLastPrinterAddress()),
+                    203,
+                    58f,
+                    width ?: 32,
+                )
+            } else {
+                EscPosPrinter(
+                    TcpConnection(
+                        ipAddress.split(":").first(),
+                        ipAddress.split(":").last().toInt(),
+                        1000,
+                    ),
+                    203,
+                    58f,
+                    width ?: 32,
+                )
+            }
 
-        printer.printFormattedText(text)
+            printer.printFormattedText(text)
 
-        printer.disconnectPrinter()
+            printer.disconnectPrinter()
+        }
     }
 
-    override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
+    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
     }
 }
