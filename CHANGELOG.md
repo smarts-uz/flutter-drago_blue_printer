@@ -1,3 +1,6 @@
+## 0.1.0+3
+* Supports printing to WiFi Printer by specifying `ipAddress: <ip address>:<port>`
+
 ## 0.0.2+2
 * Persist last used printer address for faster printing 
 
