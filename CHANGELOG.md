@@ -1,3 +1,6 @@
+## 0.1.1
+* Handling error during printing
+
 ## 0.1.0+3
 * Supports printing to WiFi Printer by specifying `ipAddress: <ip address>:<port>`
 

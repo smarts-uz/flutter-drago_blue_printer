@@ -1,7 +1,6 @@
 package com.renseki.lib.android_bluetooth_printer
 
 import android.content.Context
-import androidx.annotation.NonNull
 import com.dantsu.escposprinter.EscPosPrinter
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothConnection
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnections
@@ -37,8 +36,16 @@ class AndroidBluetoothPrinterPlugin : FlutterPlugin, MethodCallHandler {
                     null,
                 )
             } else {
-                print(text, ipAddress, width)
-                result.success("printed")
+                try {
+                    print(text, ipAddress, width)
+                    result.success("printed")
+                } catch (e: Exception) {
+                    result.error(
+                        "500",
+                        e.message ?: e.toString(),
+                        null,
+                    )
+                }
             }
         } else {
             result.notImplemented()
