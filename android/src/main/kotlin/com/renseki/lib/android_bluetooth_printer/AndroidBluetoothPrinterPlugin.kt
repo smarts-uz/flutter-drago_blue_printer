@@ -5,7 +5,6 @@ import com.dantsu.escposprinter.EscPosPrinter
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothConnection
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnections
 import com.dantsu.escposprinter.connection.tcp.TcpConnection
-import com.dantsu.escposprinter.exceptions.EscPosConnectionException
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -63,16 +62,14 @@ class AndroidBluetoothPrinterPlugin : FlutterPlugin, MethodCallHandler {
             }
         }
 
-        if (!bluetoothPrinters.isNullOrEmpty()) {
-            for (printer in bluetoothPrinters) {
-                try {
-                    printer.connect()
-                    context.setLastPrinterAddress(printer.device.address)
-                    return printer
-                } catch (e: EscPosConnectionException) {
-                    e.printStackTrace()
-                }
-            }
+        if (bluetoothPrinters.isNullOrEmpty()) {
+            throw Exception("No bluetooth printers found")
+        }
+
+        for (printer in bluetoothPrinters) {
+            printer.connect()
+            context.setLastPrinterAddress(printer.device.address)
+            return printer
         }
 
         return null

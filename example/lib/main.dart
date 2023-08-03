@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
                     // "[L]\n" +
                     // "[C]<barcode type='ean13' height='10'>831254784551</barcode>\n" +
                     // "[C]<qrcode size='20'>http://www.developpeur-web.dantsu.com/</qrcode>",
-                    ipAddress: '192.168.24.83:9100',
+                    // ipAddress: '192.168.24.83:9100',
                   );
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(

@@ -1,3 +1,6 @@
+## 0.1.3
+* Bugfix error propagation
+
 ## 0.1.2
 * Propagate error to caller
 
