@@ -11,7 +11,6 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import kotlin.concurrent.thread
 
 class AndroidBluetoothPrinterPlugin : FlutterPlugin, MethodCallHandler {
     private lateinit var channel: MethodChannel
@@ -36,10 +35,9 @@ class AndroidBluetoothPrinterPlugin : FlutterPlugin, MethodCallHandler {
                     null,
                 )
             } else {
-                try {
-                    print(text, ipAddress, width)
+                print(text, ipAddress, width, {
                     result.success("printed")
-                } catch (e: Exception) {
+                }) { e ->
                     result.error(
                         "500",
                         e.message ?: e.toString(),
@@ -97,31 +95,44 @@ class AndroidBluetoothPrinterPlugin : FlutterPlugin, MethodCallHandler {
         )
     }
 
-    private fun print(text: String, ipAddress: String?, width: Int?) {
-        thread {
-            val printer = if (ipAddress.isNullOrBlank()) {
-                EscPosPrinter(
-                    getPrinter(context.getLastPrinterAddress()),
-                    203,
-                    58f,
-                    width ?: 32,
-                )
-            } else {
-                EscPosPrinter(
-                    TcpConnection(
-                        ipAddress.split(":").first(),
-                        ipAddress.split(":").last().toInt(),
-                        1000,
-                    ),
-                    203,
-                    58f,
-                    width ?: 32,
-                )
+    private fun print(
+        text: String,
+        ipAddress: String?,
+        width: Int?,
+        onSuccess: () -> Unit,
+        onError: (Throwable) -> Unit,
+    ) {
+        object : Thread() {
+            override fun run() {
+                val printer = if (ipAddress.isNullOrBlank()) {
+                    EscPosPrinter(
+                        getPrinter(context.getLastPrinterAddress()),
+                        203,
+                        58f,
+                        width ?: 32,
+                    )
+                } else {
+                    EscPosPrinter(
+                        TcpConnection(
+                            ipAddress.split(":").first(),
+                            ipAddress.split(":").last().toInt(),
+                            1000,
+                        ),
+                        203,
+                        58f,
+                        width ?: 32,
+                    )
+                }
+
+                printer.printFormattedText(text)
+
+                printer.disconnectPrinter()
+
+                onSuccess()
             }
-
-            printer.printFormattedText(text)
-
-            printer.disconnectPrinter()
+        }.also {
+            it.uncaughtExceptionHandler = Thread.UncaughtExceptionHandler { _, ex -> onError(ex) }
+            it.start()
         }
     }
 

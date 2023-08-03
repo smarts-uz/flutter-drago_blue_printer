@@ -1,7 +1,8 @@
 name: android_bluetooth_printer
 description: A plugin for Android Bluetooth Printer
-version: 0.1.1
+version: 0.1.2
 homepage: https://www.renseki.com
+repository: https://gitlab.com/erickentry/flutter-android-bluetooth-printer
 
 environment:
   sdk: ">=2.12.0 <4.0.0"

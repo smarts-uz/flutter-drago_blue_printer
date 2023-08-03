@@ -1,3 +1,6 @@
+## 0.1.2
+* Propagate error to caller
+
 ## 0.1.1
 * Handling error during printing
 
