@@ -136,8 +136,6 @@ class AndroidBluetoothPrinterPlugin : FlutterPlugin, MethodCallHandler {
 
                 printer.printFormattedTextAndCut(text)
 
-                printer.disconnectPrinter()
-
                 onSuccess()
             }
         }.also {

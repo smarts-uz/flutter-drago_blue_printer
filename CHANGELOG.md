@@ -1,3 +1,6 @@
+## 0.1.4
+* Bugfix printer reconnection
+
 ## 0.1.3
 * Bugfix error propagation
 
