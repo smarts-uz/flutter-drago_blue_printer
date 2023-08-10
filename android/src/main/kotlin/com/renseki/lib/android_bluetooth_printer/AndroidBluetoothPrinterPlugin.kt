@@ -11,6 +11,7 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 
+
 class AndroidBluetoothPrinterPlugin : FlutterPlugin, MethodCallHandler {
     private lateinit var channel: MethodChannel
     private lateinit var context: Context
@@ -49,30 +50,33 @@ class AndroidBluetoothPrinterPlugin : FlutterPlugin, MethodCallHandler {
         }
     }
 
-    private fun getPrinter(printerAddress: String?): BluetoothConnection? {
-        val printers = BluetoothPrintersConnections()
-        val bluetoothPrinters = printers.list
-
-        if (printerAddress != null) {
-            val lastPrinter = bluetoothPrinters?.firstOrNull { it.device.address == printerAddress }
-            if (lastPrinter != null) try {
-                return lastPrinter.connect()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
+    private fun getPrinter(printerAddress: String?): BluetoothConnection {
+        val bluetoothPrinters = BluetoothPrintersConnections().list
 
         if (bluetoothPrinters.isNullOrEmpty()) {
             throw Exception("No bluetooth printers found")
         }
 
-        for (printer in bluetoothPrinters) {
-            printer.connect()
-            context.setLastPrinterAddress(printer.device.address)
-            return printer
+        if (printerAddress != null) {
+            val lastPrinter = bluetoothPrinters.firstOrNull { it.device.address == printerAddress }
+            if (lastPrinter != null) try {
+                return lastPrinter.connect()
+            } catch (ignore: Exception) {
+                ignore.printStackTrace()
+            }
         }
 
-        return null
+        for (printer in bluetoothPrinters) {
+            try {
+                printer.connect()
+                context.setLastPrinterAddress(printer.device.address)
+                return printer
+            } catch (ignore: Exception) {
+                continue
+            }
+        }
+
+        throw Exception("No bluetooth printers can be connected to")
     }
 
     private fun Context.setLastPrinterAddress(address: String) {
@@ -99,14 +103,23 @@ class AndroidBluetoothPrinterPlugin : FlutterPlugin, MethodCallHandler {
         onSuccess: () -> Unit,
         onError: (Throwable) -> Unit,
     ) {
+        val widthInMM = when (width) {
+            32 -> 58f
+            33 -> 58f
+            42 -> 80f
+            else -> 58f
+        }
+
+        val maxChars = width ?: 32
+
         object : Thread() {
             override fun run() {
                 val printer = if (ipAddress.isNullOrBlank()) {
                     EscPosPrinter(
                         getPrinter(context.getLastPrinterAddress()),
                         203,
-                        58f,
-                        width ?: 32,
+                        widthInMM,
+                        maxChars,
                     )
                 } else {
                     EscPosPrinter(
@@ -116,12 +129,12 @@ class AndroidBluetoothPrinterPlugin : FlutterPlugin, MethodCallHandler {
                             1000,
                         ),
                         203,
-                        58f,
-                        width ?: 32,
+                        widthInMM,
+                        maxChars,
                     )
                 }
 
-                printer.printFormattedText(text)
+                printer.printFormattedTextAndCut(text)
 
                 printer.disconnectPrinter()
 
